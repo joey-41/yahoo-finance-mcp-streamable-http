@@ -1,0 +1,19 @@
+[Unit]
+Description=Yahoo Finance MCP Streamable HTTP
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/yahoo-finance-mcp-streamable-http
+Environment="MCP_HOST=0.0.0.0"
+Environment="MCP_PORT=8000"
+Environment="MCP_PATH=/mcp"
+Environment="MCP_API_KEY=replace-with-strong-key"
+Environment="MCP_API_KEY_HEADER=X-API-Key"
+ExecStart=/opt/yahoo-finance-mcp-streamable-http/.venv/bin/python /opt/yahoo-finance-mcp-streamable-http/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
