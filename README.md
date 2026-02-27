@@ -11,6 +11,7 @@ This project is a Streamable HTTP version of [Alex2Yang97/yahoo-finance-mcp](htt
 - Health check endpoint: `/healthz`
 - Environment-based configuration for host, port, path, log level, and stateless mode
 - API Key authentication via request header (optional)
+- Concurrency protection for blocking yfinance calls (thread pool + semaphore + overload fast-fail)
 
 ## Available Tools
 
@@ -55,6 +56,10 @@ Default runtime:
 | `MCP_STATELESS_HTTP` | `false` | Enable stateless HTTP mode |
 | `MCP_API_KEY` | empty | API Key for authentication; empty means disabled |
 | `MCP_API_KEY_HEADER` | `X-API-Key` | Header name used for API Key |
+| `MCP_MAX_CONCURRENT_YF_REQUESTS` | `32` | Maximum in-flight yfinance tasks allowed by semaphore |
+| `MCP_YF_THREAD_WORKERS` | `16` | Worker count for the dedicated yfinance thread pool |
+| `MCP_YF_ACQUIRE_TIMEOUT_SECONDS` | `2.0` | Timeout while waiting for yfinance concurrency slot |
+| `MCP_UVICORN_LIMIT_CONCURRENCY` | `0` | Uvicorn global concurrency cap (`0` = unlimited) |
 
 Example:
 

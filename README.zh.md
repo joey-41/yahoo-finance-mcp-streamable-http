@@ -11,6 +11,7 @@
 - 提供健康检查端点：`/healthz`
 - 支持通过环境变量配置监听地址、端口、路径、日志级别和无状态模式
 - 支持 API Key 鉴权（可选）
+- 针对高并发场景增加保护（线程池隔离 + 并发信号量 + 快速失败）
 
 ## 可用工具
 
@@ -55,6 +56,10 @@ python server.py
 | `MCP_STATELESS_HTTP` | `false` | 是否启用无状态 HTTP 模式 |
 | `MCP_API_KEY` | 空 | API Key；为空表示不启用鉴权 |
 | `MCP_API_KEY_HEADER` | `X-API-Key` | API Key 请求头名称 |
+| `MCP_MAX_CONCURRENT_YF_REQUESTS` | `32` | 允许同时执行的 yfinance 任务上限（信号量） |
+| `MCP_YF_THREAD_WORKERS` | `16` | 专用 yfinance 线程池工作线程数 |
+| `MCP_YF_ACQUIRE_TIMEOUT_SECONDS` | `2.0` | 等待并发槽位的超时时间（秒） |
+| `MCP_UVICORN_LIMIT_CONCURRENCY` | `0` | Uvicorn 全局并发上限（`0` 表示不限制） |
 
 基础示例：
 
