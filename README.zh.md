@@ -6,7 +6,7 @@
 
 ## 功能特性
 
-- 支持 MCP Streamable HTTP 传输（默认路径 `/mcp`）
+- 支持 MCP Streamable HTTP 传输（默认路径 `/mcp/`，兼容 `/mcp`）
 - 提供 Yahoo Finance 常用能力（行情、财报、期权、新闻、评级、持仓）
 - 提供健康检查端点：`/healthz`
 - 支持通过环境变量配置监听地址、端口、路径、日志级别和无状态模式
@@ -51,7 +51,7 @@ python server.py
 | --- | --- | --- |
 | `MCP_HOST` | `0.0.0.0` | 服务监听地址 |
 | `MCP_PORT` | `8000` | 服务端口 |
-| `MCP_PATH` | `/mcp` | Streamable HTTP MCP 路径 |
+| `MCP_PATH` | `/mcp` | Streamable HTTP MCP 基础路径（服务端兼容有无尾斜杠） |
 | `MCP_LOG_LEVEL` | `INFO` | 日志级别 |
 | `MCP_STATELESS_HTTP` | `false` | 是否启用无状态 HTTP 模式 |
 | `MCP_API_KEY` | 空 | API Key；为空表示不启用鉴权 |
@@ -126,7 +126,7 @@ server {
 
 部署完成后，在 MCP 客户端中使用：
 
-- `https://your-domain.com/mcp`
+- `https://your-domain.com/mcp/`（推荐）
 
 ## cURL 初始化示例
 

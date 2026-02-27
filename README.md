@@ -6,7 +6,7 @@ This project is a Streamable HTTP version of [Alex2Yang97/yahoo-finance-mcp](htt
 
 ## Features
 
-- MCP Streamable HTTP transport (default path: `/mcp`)
+- MCP Streamable HTTP transport (default path: `/mcp/`, compatible with `/mcp`)
 - Yahoo Finance toolset (prices, fundamentals, options, news, recommendations, holders)
 - Health check endpoint: `/healthz`
 - Environment-based configuration for host, port, path, log level, and stateless mode
@@ -51,7 +51,7 @@ Default runtime:
 | --- | --- | --- |
 | `MCP_HOST` | `0.0.0.0` | Bind address |
 | `MCP_PORT` | `8000` | Service port |
-| `MCP_PATH` | `/mcp` | Streamable HTTP MCP path |
+| `MCP_PATH` | `/mcp` | Streamable HTTP MCP base path (server accepts both with/without trailing slash) |
 | `MCP_LOG_LEVEL` | `INFO` | Log level |
 | `MCP_STATELESS_HTTP` | `false` | Enable stateless HTTP mode |
 | `MCP_API_KEY` | empty | API Key for authentication; empty means disabled |
@@ -126,7 +126,7 @@ server {
 
 After deployment, use the following URL in MCP clients:
 
-- `https://your-domain.com/mcp`
+- `https://your-domain.com/mcp/` (recommended)
 
 ## cURL Example (Initialize)
 

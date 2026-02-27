@@ -67,6 +67,20 @@ def _env_float(name: str, default: float, minimum: float = 0.0) -> float:
     return max(minimum, parsed)
 
 
+def _normalize_mcp_path(path: str) -> tuple[str, str]:
+    normalized = path.strip()
+    if not normalized:
+        normalized = "/mcp"
+    if not normalized.startswith("/"):
+        normalized = f"/{normalized}"
+
+    if normalized == "/":
+        return "/", "/"
+    path_without_slash = normalized.rstrip("/")
+    path_with_slash = f"{path_without_slash}/"
+    return path_without_slash, path_with_slash
+
+
 MCP_HOST = os.getenv("MCP_HOST", "0.0.0.0")
 MCP_PORT = int(os.getenv("MCP_PORT", "8000"))
 MCP_PATH = os.getenv("MCP_PATH", "/mcp")
@@ -78,6 +92,7 @@ MCP_MAX_CONCURRENT_YF_REQUESTS = _env_int("MCP_MAX_CONCURRENT_YF_REQUESTS", 32, 
 MCP_YF_THREAD_WORKERS = _env_int("MCP_YF_THREAD_WORKERS", 16, minimum=1)
 MCP_YF_ACQUIRE_TIMEOUT_SECONDS = _env_float("MCP_YF_ACQUIRE_TIMEOUT_SECONDS", 2.0, minimum=0.1)
 MCP_UVICORN_LIMIT_CONCURRENCY = _env_int("MCP_UVICORN_LIMIT_CONCURRENCY", 0, minimum=0)
+MCP_PATH_NO_SLASH, MCP_PATH_WITH_SLASH = _normalize_mcp_path(MCP_PATH)
 
 
 yfinance_server = FastMCP(
@@ -100,7 +115,7 @@ Available tools:
 """,
     host=MCP_HOST,
     port=MCP_PORT,
-    streamable_http_path=MCP_PATH,
+    streamable_http_path=MCP_PATH_NO_SLASH,
     stateless_http=MCP_STATELESS_HTTP,
     log_level=MCP_LOG_LEVEL,
 )
@@ -173,6 +188,10 @@ async def _run_yfinance_task(task: Callable[[], str]) -> str:
 
 class ApiKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+        if request.url.path == MCP_PATH_NO_SLASH and MCP_PATH_NO_SLASH != MCP_PATH_WITH_SLASH:
+            request.scope["path"] = MCP_PATH_WITH_SLASH
+            request.scope["raw_path"] = MCP_PATH_WITH_SLASH.encode()
+
         if not MCP_API_KEY:
             return await call_next(request)
 
@@ -196,7 +215,8 @@ async def healthz(_: Request) -> Response:
             "status": "ok",
             "service": "yfinance-streamable-http",
             "transport": "streamable-http",
-            "mcp_path": MCP_PATH,
+            "mcp_path": MCP_PATH_NO_SLASH,
+            "mcp_path_with_slash": MCP_PATH_WITH_SLASH,
             "stateless": MCP_STATELESS_HTTP,
             "max_concurrent_yfinance_requests": MCP_MAX_CONCURRENT_YF_REQUESTS,
             "yfinance_thread_workers": MCP_YF_THREAD_WORKERS,
@@ -573,7 +593,7 @@ if __name__ == "__main__":
 
     print(
         "Starting Yahoo Finance MCP Streamable HTTP server "
-        f"on {MCP_HOST}:{MCP_PORT}{MCP_PATH}; "
+        f"on {MCP_HOST}:{MCP_PORT}{MCP_PATH_WITH_SLASH}; "
         f"api_key_enabled={'yes' if MCP_API_KEY else 'no'}; "
         f"yf_max_concurrency={MCP_MAX_CONCURRENT_YF_REQUESTS}; "
         f"yf_thread_workers={MCP_YF_THREAD_WORKERS}; "
